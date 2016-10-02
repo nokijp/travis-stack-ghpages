@@ -65,13 +65,15 @@ function generate_index() {
   local temp_dir="$(mktemp -d)"
   local src_tarball
   for src_tarball in */*/*.tar.gz; do
-    if [[ "$src_tarball" =~ ([^/]+/[0-9.]+)/([^/]+)\.tar\.gz ]]; then
-      local dest_dir="$temp_dir/${BASH_REMATCH[1]}"
-      local cabal_name="${BASH_REMATCH[2]}.cabal"
-    else
+    if ! [[ "$src_tarball" =~ ([^/]+/[0-9.]+)/([^/]+)\.tar\.gz ]]; then
       continue
     fi
+    local dest_dir="$temp_dir/${BASH_REMATCH[1]}"
+    local cabal_name="${BASH_REMATCH[2]}.cabal"
 
+    if ! tar ztf "$cabal_name"; then
+      continue
+    fi
     mkdir -p "$dest_dir"
     tar zxOf "$src_tarball" "$cabal_name" > "$dest_dir/$cabal_name"
   done
