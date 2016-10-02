@@ -31,19 +31,19 @@ function setup_ssh() {
 }
 
 function setup_dir() {
-  local tmp_dir=dist
+  local dist_dir=dist
 
-  rm -rf "$tmp_dir"
-  git clone "$git_repo" "$tmp_dir"
-  cd "$tmp_dir"
+  rm -rf "$dist_dir"
+  git clone "$git_repo" "$dist_dir"
+  cd "$dist_dir"
   git checkout "$target_branch" || git checkout --orphan "$target_branch"
   git reset --hard
 }
 
 function copy_packages() {
   function repo_package_path() {
-    if [[ "$1" =~ ([^/]+)-([0-9.]+)(\.tar\.gz)$ ]]; then
-      echo "${BASH_REMATCH[1]}/${BASH_REMATCH[2]}/${BASH_REMATCH[1]}${BASH_REMATCH[3]}"
+    if [[ "$1" =~ ([^/]+)-([0-9.]+)\.tar\.gz$ ]]; then
+      echo "${BASH_REMATCH[1]}/${BASH_REMATCH[2]}/${BASH_REMATCH[0]}"
     fi
   }
 
@@ -62,20 +62,26 @@ function copy_packages() {
 function generate_index() {
   local index_tarball="$1"
 
-  local temp_dir="$(mktemp -d)"
+  local temp_dir="$(mktemp -d '/tmp/XXXXXX')"
+  if [[ -z "$temp_dir" ]]; then
+    false
+  fi
+
   local src_tarball
   for src_tarball in */*/*.tar.gz; do
-    if ! [[ "$src_tarball" =~ ([^/]+/[0-9.]+)/([^/]+)\.tar\.gz ]]; then
+    if ! [[ "$src_tarball" =~ ([^/]+)/([0-9.]+)/([^/]+)\.tar\.gz ]]; then
       continue
     fi
-    local dest_dir="$temp_dir/${BASH_REMATCH[1]}"
-    local cabal_name="${BASH_REMATCH[2]}.cabal"
+    local dest_dir="$temp_dir/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}"
+    local cabal_file="${BASH_REMATCH[1]}.cabal"
+    local src_cabal_file="${BASH_REMATCH[3]}/$cabal_file"
+    local dest_cabal_file="$dest_dir/$cabal_file"
 
-    if ! tar ztf "$cabal_name"; then
+    if ! tar ztf "$src_cabal_file"; then
       continue
     fi
     mkdir -p "$dest_dir"
-    tar zxOf "$src_tarball" "$cabal_name" > "$dest_dir/$cabal_name"
+    tar zxOf "$src_tarball" "$src_cabal_file" > "$dest_cabal_file"
   done
 
   tar zcf "$index_tarball" -C "$temp_dir" "$temp_dir"/*
