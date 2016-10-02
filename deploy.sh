@@ -77,14 +77,14 @@ function generate_index() {
     local src_cabal_file="${BASH_REMATCH[3]}/$cabal_file"
     local dest_cabal_file="$dest_dir/$cabal_file"
 
-    if ! tar ztf "$src_cabal_file"; then
+    if ! tar ztf "$src_tarball" "$src_cabal_file"; then
       continue
     fi
     mkdir -p "$dest_dir"
     tar zxOf "$src_tarball" "$src_cabal_file" > "$dest_cabal_file"
   done
 
-  tar zcf "$index_tarball" -C "$temp_dir" "$temp_dir"/*
+  ls "$temp_dir" | xargs tar zcf "$index_tarball" -C "$temp_dir"
 }
 
 setup_dir
