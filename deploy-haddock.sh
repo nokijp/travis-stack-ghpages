@@ -46,6 +46,7 @@ function setup_dir() {
 }
 
 function copy_docs() {
+  rm -rf *
   cp -r "$stack_docs_dir/"* .
 }
 
