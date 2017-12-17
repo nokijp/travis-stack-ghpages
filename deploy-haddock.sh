@@ -11,7 +11,7 @@ function read_cabal_file() {
 }
 readonly package_name="$(read_cabal_file name)"
 readonly package_version="$(read_cabal_file version)"
-readonly stack_docs_dir="$(pwd)/$(stack path --local-doc-root)/$package_name-$package_version"
+readonly stack_docs_dir="$(stack path --local-doc-root)/$package_name-$package_version"
 readonly deploy_key_enc="$(pwd)/deploy_key.enc"
 
 readonly target_branch='gh-pages'
