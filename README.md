@@ -20,13 +20,6 @@ cache:
     - ~/.stack
     - ~/.local
 
-addons:
-  apt:
-    sources:
-      - hvr-ghc
-    packages:
-      - ghc-8.0.2
-
 before_install:
   - mkdir -p ~/.local/bin
   - export PATH=~/.local/bin:$PATH
